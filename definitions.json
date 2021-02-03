@@ -1,0 +1,159 @@
+{
+    "rabbit_version": "3.8.11",
+    "rabbitmq_version": "3.8.11",
+    "product_name": "RabbitMQ",
+    "product_version": "3.8.11",
+    "users": [
+        {
+            "name": "guest",
+            "password_hash": "jN2fiaYGFPQNxGBMEG1TQt1NCTX2OtJ39GrqlP9zyI/ug2cD",
+            "hashing_algorithm": "rabbit_password_hashing_sha256",
+            "tags": "administrator"
+        }
+    ],
+    "vhosts": [
+        {
+            "name": "/"
+        }
+    ],
+    "permissions": [
+        {
+            "user": "guest",
+            "vhost": "/",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        }
+    ],
+    "topic_permissions": [],
+    "parameters": [],
+    "global_parameters": [
+        {
+            "name": "cluster_name",
+            "value": "rabbit@00f4f08250c3"
+        },
+        {
+            "name": "internal_cluster_id",
+            "value": "rabbitmq-cluster-id-DkjPDo51_W9gD5D6EUPvpQ"
+        }
+    ],
+    "policies": [],
+    "queues": [
+        {
+            "name": "evaluate",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        },
+        {
+            "name": "completed",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        },
+        {
+            "name": "train",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        },
+        {
+            "name": "preprocess",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        },
+        {
+            "name": "unittest",
+            "vhost": "/",
+            "durable": false,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic"
+            }
+        }
+    ],
+    "exchanges": [
+        {
+            "name": "topic_logs",
+            "vhost": "/",
+            "type": "topic",
+            "durable": false,
+            "auto_delete": false,
+            "internal": false,
+            "arguments": {}
+        },
+        {
+            "name": "SynMQ_fanout_logs",
+            "vhost": "/",
+            "type": "fanout",
+            "durable": true,
+            "auto_delete": false,
+            "internal": false,
+            "arguments": {}
+        },
+        {
+            "name": "SynMQ_topic_logs",
+            "vhost": "/",
+            "type": "topic",
+            "durable": true,
+            "auto_delete": false,
+            "internal": false,
+            "arguments": {}
+        }
+    ],
+    "bindings": [
+        {
+            "source": "SynMQ_fanout_logs",
+            "vhost": "/",
+            "destination": "completed",
+            "destination_type": "queue",
+            "routing_key": "SynMQ_fanout_completed",
+            "arguments": {}
+        },
+        {
+            "source": "SynMQ_topic_logs",
+            "vhost": "/",
+            "destination": "evaluate",
+            "destination_type": "queue",
+            "routing_key": "SynMQ_topic_evaluate",
+            "arguments": {}
+        },
+        {
+            "source": "SynMQ_topic_logs",
+            "vhost": "/",
+            "destination": "train",
+            "destination_type": "queue",
+            "routing_key": "SynMQ_topic_train",
+            "arguments": {}
+        },
+        {
+            "source": "SynMQ_topic_logs",
+            "vhost": "/",
+            "destination": "preprocess",
+            "destination_type": "queue",
+            "routing_key": "SynMQ_topic_preprocess",
+            "arguments": {}
+        },
+        {
+            "source": "SynMQ_topic_logs",
+            "vhost": "/",
+            "destination": "unittest",
+            "destination_type": "queue",
+            "routing_key": "SynMQ_topic_unittest",
+            "arguments": {}
+        }
+    ]
+}
