@@ -37,7 +37,7 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
     keywords='synergos horizontal vertical federated learning job management',
-    url="https://gitlab.int.aisingapore.org/aims/federatedlearning/synergos",
+    url="https://gitlab.int.aisingapore.org/aims/federatedlearning/synergos_manager",
     license="MIT",
 
     packages=["synmanager"],
