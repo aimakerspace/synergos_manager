@@ -24,7 +24,7 @@ setup(
     version="0.2.0",
     author="AI Singapore",
     author_email='synergos-ext@aisingapore.org',
-    description="Interfacing package for interacting with a Synergos network",
+    description="Job management component of the Synergos network",
     long_description=read('README.md'),
     classifiers=[
         'Development Status :: 3 - Alpha',
