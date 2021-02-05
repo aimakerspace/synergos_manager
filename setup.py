@@ -23,9 +23,9 @@ setup(
     name="synergos_manager",
     version="0.2.0",
     author="AI Singapore",
-    author_email='synergos-ext@aisingapore.org',
+    author_email="synergos-ext@aisingapore.org",
     description="Job management component of the Synergos network",
-    long_description=read('README.md'),
+    long_description=read("README.md"),
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
@@ -36,14 +36,14 @@ setup(
         'Topic :: Scientific/Engineering :: Information Analysis',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
-    keywords='synergos horizontal vertical federated learning job management',
+    keywords="synergos horizontal vertical federated learning job management",
     url="https://gitlab.int.aisingapore.org/aims/federatedlearning/synergos_manager",
     license="MIT",
 
     packages=["synmanager"],
-    python_requires = '>=3.7',
+    python_requires = ">=3.7",
     install_requires=[
-        'pika'
+        "pika"
     ],
     include_package_data=True,
     zip_safe=False
