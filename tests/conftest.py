@@ -211,19 +211,19 @@ def test_message():
 
 @pytest.fixture
 def base_operator():
-    return synmanager.base.BaseOperator(host=HOST)
+    return synmanager.base.BaseOperator(host=HOST, port=PORT)
 
 
 @pytest.fixture
 def producer_operator():
-    producer = synmanager.base.ProducerOperator(host=HOST)
+    producer = synmanager.base.ProducerOperator(host=HOST, port=PORT)
     producer.routing_key = TEST_ROUTING_KEY
     return producer
 
 
 @pytest.fixture
 def consumer_operator():
-    consumer = synmanager.base.ConsumerOperator(host=HOST)
+    consumer = synmanager.base.ConsumerOperator(host=HOST, port=PORT)
     consumer.routing_key = TEST_ROUTING_KEY
     consumer.queue = TEST_QUEUE
     consumer.auto_ack = False
@@ -232,39 +232,63 @@ def consumer_operator():
 
 @pytest.fixture
 def preprocess_producer_operator():
-    return synmanager.preprocess.PreprocessProducerOperator(host=HOST)
+    return synmanager.preprocess.PreprocessProducerOperator(
+        host=HOST, 
+        port=PORT
+    )
 
 
 @pytest.fixture
 def preprocess_consumer_operator():
-    return synmanager.preprocess.PreprocessConsumerOperator(host=HOST)
+    return synmanager.preprocess.PreprocessConsumerOperator(        
+        host=HOST, 
+        port=PORT
+    )
 
 
 @pytest.fixture
 def train_producer_operator():
-    return synmanager.train.TrainProducerOperator(host=HOST)
+    return synmanager.train.TrainProducerOperator(
+        host=HOST, 
+        port=PORT
+    )
 
 
 @pytest.fixture
 def train_consumer_operator():
-    return  synmanager.train.TrainConsumerOperator(host=HOST)
+    return synmanager.train.TrainConsumerOperator(
+        host=HOST, 
+        port=PORT
+    )
 
 
 @pytest.fixture
 def evaluate_producer_operator():
-    return synmanager.evaluate.EvaluateProducerOperator(host=HOST)
+    return synmanager.evaluate.EvaluateProducerOperator(
+        host=HOST, 
+        port=PORT
+    )
 
 
 @pytest.fixture
 def evaluate_consumer_operator():
-    return synmanager.evaluate.EvaluateConsumerOperator(host=HOST)
+    return synmanager.evaluate.EvaluateConsumerOperator(
+        host=HOST, 
+        port=PORT
+    )
 
 
 @pytest.fixture
 def completed_producer_operator():
-    return synmanager.completed.CompletedProducerOperator(host=HOST)
+    return synmanager.completed.CompletedProducerOperator(
+        host=HOST, 
+        port=PORT
+    )
 
 
 @pytest.fixture
 def completed_consumer_operator():
-    return synmanager.completed.CompletedConsumerOperator(host=HOST)
+    return synmanager.completed.CompletedConsumerOperator(
+        host=HOST, 
+        port=PORT
+    )

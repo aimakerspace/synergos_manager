@@ -35,6 +35,7 @@ class BaseOperator(AbstractOperator):
 
     Attributes:
         host (str): Address where queue is hosted on
+        port (int): Port where queue is hosted on
         channel (pika.channel.Channel): Communication method used
         connection (pika.connection.Connection): Connection on which to 
             communicate with deployed RabbitMQ server
@@ -45,9 +46,10 @@ class BaseOperator(AbstractOperator):
             when broker restarts after it had been taken down
         routing_key (str): Message attribute of header
     """
-    def __init__(self, host: str = None):
+    def __init__(self, host: str, port: int):
         # General attributes
-        self.host = "localhost" if not host else host
+        self.host = host
+        self.port = port
         
         # Network attributes
         self.channel = None
@@ -118,7 +120,10 @@ class BaseOperator(AbstractOperator):
     def connect(self):
         """ Initiate connection with RabbitMQ exchange where queues exist """
         if not self.is_connected(): 
-            parameters = pika.ConnectionParameters(host=self.host)
+            parameters = pika.ConnectionParameters(
+                host=self.host, 
+                port=self.port
+            )
             self.connection = pika.BlockingConnection(parameters)
 
             self.channel = self.connection.channel()
@@ -166,6 +171,7 @@ class ProducerOperator(BaseOperator):
 
     Attributes:
         host (str): Address where queue is hosted on
+        port (int): Port where queue is hosted on
         channel (pika.channel.Channel): Communication method used
         connection (pika.connection.Connection): Connection on which to 
             communicate with deployed RabbitMQ server
@@ -176,8 +182,8 @@ class ProducerOperator(BaseOperator):
             when broker restarts after it had been taken down
         routing_key (str): Message attribute of header
     """
-    def __init__(self, host: str = None):
-        super().__init__(host)
+    def __init__(self, host: str, port: int):
+        super().__init__(host=host, port=port)
     
 
     ###########    
@@ -250,6 +256,7 @@ class ConsumerOperator(BaseOperator):
 
     Attributes:
         host (str): Address where queue is hosted on
+        port (int): Port where queue is hosted on
         channel (pika.channel.Channel): Communication method used
         connection (pika.connection.Connection): Connection on which to 
             communicate with deployed RabbitMQ server
@@ -267,8 +274,8 @@ class ConsumerOperator(BaseOperator):
             process is completed & any intermittent failures will result in 
             lost messages being restored after restart
     """
-    def __init__(self, host: str = None):
-        super().__init__(host)
+    def __init__(self, host: str, port: int):
+        super().__init__(host=host, port=port)
         
         # General attributes
 
@@ -329,7 +336,15 @@ class ConsumerOperator(BaseOperator):
 
         
     def listen_message(self, process_function: Callable):
-        """ Commence message consumption from queue on current consumer """
+        """ Commence message consumption from queue on current consumer. This
+            opens a long running channel that listens to a specific queue, in
+            contrast with `.poll_message(...)` which only consumes a single
+            message.
+
+        Args:
+            process_function (Callable): Callback function to be executed with
+                arguments retrieved from queue.
+        """
         if not self.is_connected():
             raise RuntimeError("Operator is not connected! Run '.connect()' and try again!")
 
@@ -349,7 +364,14 @@ class ConsumerOperator(BaseOperator):
 
 
     def poll_message(self, process_function: Callable):
-        """ Synchronous call to the broker for an individual message """
+        """ Synchronous call to the broker for an individual message. This only 
+            consumes a single message, in contrast with `.listen_message(...)` 
+            which opens a long running channel that listens to a specific queue. 
+            
+        Args:
+            process_function (Callable): Callback function to be executed with
+                arguments retrieved from queue.
+        """
         if not self.is_connected():
             raise RuntimeError("Operator is not connected! Run '.connect()' and try again!")
 

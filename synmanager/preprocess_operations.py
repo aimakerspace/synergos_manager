@@ -30,8 +30,9 @@ class PreprocessProducerOperator(ProducerOperator):
     Contains management functionality for handling preprocessing job 
     submissions to the "Preprocess" queue.
     """
-    def __init__(self, host: str = None):
-        super().__init__(host=host)
+
+    def __init__(self, host: str, port: int):
+        super().__init__(host=host, port=port)
 
         # General attributes
         
@@ -90,8 +91,9 @@ class PreprocessConsumerOperator(ConsumerOperator):
     Contains management functionality for handling preprocessing job 
     consumptions from the "Preprocess" queue
     """
-    def __init__(self, host: str = None):
-        super().__init__(host=host)
+
+    def __init__(self, host: str, port: int):
+        super().__init__(host=host, port=port)
 
         # General attributes
 

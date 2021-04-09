@@ -29,8 +29,9 @@ class EvaluateProducerOperator(ProducerOperator):
     Contains management functionality for handling preprocessing job 
     submissions to the "Evaluate" queue.
     """
-    def __init__(self, host=None):
-        super().__init__(host)
+
+    def __init__(self, host: str, port: int):
+        super().__init__(host=host, port=port)
 
         # General attributes
 
@@ -75,8 +76,9 @@ class EvaluateConsumerOperator(ConsumerOperator):
     Contains management functionality for handling evaluation job 
     consumptions from the "Evaluate" queue.
     """
-    def __init__(self, host=None):
-        super().__init__(host)
+
+    def __init__(self, host: str, port: int):
+        super().__init__(host=host, port=port)
 
         # General attributes
         

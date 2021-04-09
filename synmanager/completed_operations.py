@@ -35,8 +35,8 @@ class CompletedProducerOperator(ProducerOperator):
     Contains management functionality for handling completed job submissions to
     the "Completed_*" queue(s)
     """
-    def __init__(self, host=None):
-        super().__init__(host)
+    def __init__(self, host: str, port: int):
+        super().__init__(host=host, port=port)
 
         # General attributes
 
@@ -85,8 +85,8 @@ class CompletedConsumerOperator(ConsumerOperator):
     from the "Completed" queue. Completed queues are exclusive to consumers 
     and are within a fanout exchange.
     """
-    def __init__(self, host=None):
-        super().__init__(host)
+    def __init__(self, host: str, port: int):
+        super().__init__(host=host, port=port)
 
         # General attributes
 

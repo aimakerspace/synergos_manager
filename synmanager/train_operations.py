@@ -30,8 +30,8 @@ class TrainProducerOperator(ProducerOperator):
     submissions to the "Train" queue.
     """
 
-    def __init__(self, host: str = None):
-        super().__init__(host=host)
+    def __init__(self, host: str, port: int):
+        super().__init__(host=host, port=port)
 
         # General attributes
 
@@ -76,8 +76,9 @@ class TrainConsumerOperator(ConsumerOperator):
     Contains management functionality for handling training job 
     consumptions from the "Train" queue
     """
-    def __init__(self, host: str = None):
-        super().__init__(host=host)
+
+    def __init__(self, host: str, port: int):
+        super().__init__(host=host, port=port)
 
         # General attributes
 

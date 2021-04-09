@@ -28,9 +28,15 @@ def test_CompletedProducerOperator_publish_message(
     test_message, 
     completed_producer_operator
 ):
+    """ Tests if message publishing to the `Completed` queue is valid.
+
+    # C1: Check that a single message was published successfully 
+    # C2: Check that the published message is indentical to original
+    """
     completed_producer_operator.connect()
     completed_producer_operator.publish_message(test_message)
 
+    # C1
     declared_queue = completed_producer_operator.channel.queue_declare(
         COMPLETED_QUEUE, 
         passive=False, 
@@ -38,7 +44,7 @@ def test_CompletedProducerOperator_publish_message(
     )
     queue_message_count = declared_queue.method.message_count
     assert queue_message_count == 1
-    
+    # C2
     _, _, body = completed_producer_operator.channel.basic_get(
         queue=COMPLETED_QUEUE, 
         auto_ack=True
@@ -52,9 +58,17 @@ def test_CompletedProducerOperator_process(
     test_kwargs, 
     completed_producer_operator
 ):
+    """ Tests if message generation is valid. Bulk messages are generated from
+        a set of declared arguments and sent to the `Completed` queue.
+
+    # C1: Check that declared arguments was decomposed into correct no. of jobs
+    # C2: Check that published message is composed of a single job
+    # C2: Check that published message is valid
+    """
     completed_producer_operator.connect()
     completed_producer_operator.process(**PROJECT_KEY, kwargs=test_kwargs)
 
+    # C1
     declared_queue = completed_producer_operator.channel.queue_declare(
         COMPLETED_QUEUE,
         passive=False, 
@@ -82,8 +96,10 @@ def test_CompletedProducerOperator_process(
 
     assert len(store) == 2
     for federated_config in store:
+        # C2
         registered_runs = federated_config[PROJECT_KEY['project_id']]['runs']
         assert len(registered_runs) == 1
+        # C3
         assert registered_runs.pop() in [RUN_RECORD_1, RUN_RECORD_2]
 
     p.terminate()
