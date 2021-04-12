@@ -13,7 +13,10 @@ from multiprocessing import Manager, Process
 
 # Custom
 from synmanager.config import TRAIN_QUEUE
-from conftest import PROJECT_KEY, RUN_RECORD_1, RUN_RECORD_2
+from conftest import (
+    PROJECT_KEY, RUN_RECORD_1, RUN_RECORD_2,
+    enumerate_federated_conbinations
+)
 
 ##################
 # Configurations #
@@ -63,7 +66,13 @@ def test_TrainProducerOperator_process(test_kwargs, train_producer_operator):
     # C2: Check that published message is valid
     """
     train_producer_operator.connect()
-    train_producer_operator.process(**PROJECT_KEY, kwargs=test_kwargs)
+    job_combinations = enumerate_federated_conbinations(**test_kwargs)
+    for job_key, job_kwargs in job_combinations.items():
+        train_producer_operator.process(**{
+            'process': 'completed',   # operations filter for MQ consumer
+            'combination_key': job_key,
+            'combination_params': job_kwargs
+        })
 
     # C1
     declared_queue = train_producer_operator.channel.queue_declare(
@@ -94,10 +103,8 @@ def test_TrainProducerOperator_process(test_kwargs, train_producer_operator):
     assert len(store) == 2
     for federated_config in store:
         # C2
-        registered_runs = federated_config[PROJECT_KEY['project_id']]['runs']
-        assert len(registered_runs) == 1
-        # C3
-        assert registered_runs.pop() in [RUN_RECORD_1, RUN_RECORD_2]
+        registered_run = federated_config['combination_params']['run']
+        assert registered_run in [RUN_RECORD_1, RUN_RECORD_2]
 
     p.terminate()
     p.join()

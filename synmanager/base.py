@@ -7,7 +7,7 @@
 # Generic/Built-in
 import json
 import logging
-from typing import Dict, List, Callable
+from typing import Dict, List, Callable, Any
 
 # Libs
 import pika
@@ -215,34 +215,22 @@ class ProducerOperator(BaseOperator):
     # Core Functions #
     ##################
 
-    def process(self, project_id: str, kwargs: dict) -> List[str]:
+    def process(self, **kwargs) -> Dict[str, Any]:
         """ Splits kwargs into individual messages, one message for each run.
             Returns number of messages published with publish_message()
 
         Args:
-            project_id (str): Project ID of the target project to operate on
-            kwargs (dict): Configurations to be decomposed into single runs
+            **kwargs: Any configurations of a single job
+        Returns:
+            Job message (dict)
         """
         if not self.is_connected():
             raise RuntimeError("Operator is not connected! Run '.connect()' and try again!")
 
-        run_ids = []
-        for experiment in kwargs['experiments']:
-            
-            curr_expt_id = experiment['key']['expt_id']
-            
-            for run in kwargs['runs']:
-                
-                if run['key']['expt_id'] == curr_expt_id:
-                    run_kwarg = kwargs.copy()
-                    run_kwarg['experiments'] = [experiment]
-                    run_kwarg['runs'] = [run]
+        message = self.create_message(kwargs)
+        self.publish_message(message)
 
-                    message = self.create_message({project_id: run_kwarg})
-                    self.publish_message(message)
-                    run_ids.append(run['key']['run_id'])
-
-        return run_ids
+        return message
 
 
 

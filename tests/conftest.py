@@ -22,6 +22,7 @@ PORT = '5672'
 IS_SECURED = False
 ADDRESS = f"https://{HOST}:{PORT}" if IS_SECURED else f"http://{HOST}:{PORT}"
 
+collab_id = "test_collab"
 project_id = "test_project"
 expt_id_1 = "test_expt_1"
 expt_id_2 = "test_expt_2"
@@ -30,27 +31,25 @@ run_id_2 = "test_run_2"
 participant_id_1 = "test_participant_1"
 participant_id_2 = "test_participant_2"
 
-PROJECT_KEY = {'project_id': project_id}
-EXPT_KEY_1 = {'project_id': project_id, 'expt_id': expt_id_1}
-EXPT_KEY_2 = {'project_id': project_id, 'expt_id': expt_id_2}
-RUN_KEY_1 = {'project_id': project_id, 'expt_id': expt_id_1, 'run_id': run_id_1}
-RUN_KEY_2 = {'project_id': project_id, 'expt_id': expt_id_1, 'run_id': run_id_2}
-RUN_KEY_3 = {'project_id': project_id, 'expt_id': expt_id_2, 'run_id': run_id_2}
+COLLAB_KEY = {'collab_id': collab_id}
+PROJECT_KEY = {**COLLAB_KEY, 'project_id': project_id}
+EXPT_KEY_1 = {**PROJECT_KEY, 'expt_id': expt_id_1}
+EXPT_KEY_2 = {**PROJECT_KEY, 'expt_id': expt_id_2}
+RUN_KEY_1 = {**EXPT_KEY_1, 'run_id': run_id_1}
+RUN_KEY_2 = {**EXPT_KEY_1, 'run_id': run_id_2}
+RUN_KEY_3 = {**EXPT_KEY_2, 'run_id': run_id_2}
 PARTICIPANT_KEY_1 = {'participant_id': participant_id_1}
 PARTICIPANT_KEY_2 = {'participant_id': participant_id_2}
-REG_KEY_1 = {'project_id': project_id, 'participant_id': participant_id_1}
-REG_KEY_2 = {'project_id': project_id, 'participant_id': participant_id_2}
-TAG_KEY_1 = {'project_id': project_id, 'participant_id': participant_id_1}
-TAG_KEY_2 = {'project_id': project_id, 'participant_id': participant_id_2}
+REG_KEY_1 = {**PROJECT_KEY, 'participant_id': participant_id_1}
+REG_KEY_2 = {**PROJECT_KEY, 'participant_id': participant_id_2}
+TAG_KEY_1 = {**PROJECT_KEY, 'participant_id': participant_id_1}
+TAG_KEY_2 = {**PROJECT_KEY, 'participant_id': participant_id_2}
 
 ACTION = "classify"
 
 EXPT_RECORD = {
     "created_at": "{TinyDate}:2021-01-28 01:34:40 N",
-    "key": {
-        "expt_id": expt_id_1,
-        "project_id": project_id
-    },
+    "key": EXPT_KEY_1,
     "model": [
         {
             "activation": "relu",
@@ -91,11 +90,7 @@ RUN_RECORD_1 = {
     "delta": 0.0,
     "epochs": 2,
     "is_snn": False,
-    "key": {
-        "expt_id": expt_id_1,
-        "project_id": project_id,
-        "run_id": run_id_1
-    },
+    "key": RUN_KEY_1,
     "l1_lambda": 0.0,
     "l2_lambda": 0.0,
     "lr": 0.001,
@@ -119,11 +114,7 @@ RUN_RECORD_2 = {
     "delta": 0.0,
     "epochs": 30,
     "is_snn": False,
-    "key": {
-        "expt_id": expt_id_1,
-        "project_id": project_id,
-        "run_id": run_id_2
-    },
+    "key": RUN_KEY_2,
     "l1_lambda": 0.0,
     "l2_lambda": 0.0,
     "lr": 0.001,
@@ -142,10 +133,7 @@ RUN_RECORD_2 = {
 REGISTRATION_RECORDS = [
     {
         "created_at": "{TinyDate}:2021-01-28 01:34:40 N",
-        "key": {
-            "participant_id": participant_id_1,
-            "project_id": project_id
-        },
+        "key": REG_KEY_1,
         "link": {
             "registration_id": "fd7836d4610811ebb8c60242ac110004"
         },
@@ -153,10 +141,7 @@ REGISTRATION_RECORDS = [
     },
     {
         "created_at": "{TinyDate}:2021-01-28 01:34:40 N",
-        "key": {
-            "participant_id": participant_id_2,
-            "project_id": project_id
-        },
+        "key": REG_KEY_2,
         "link": {
             "registration_id": "fd7f743a610811eba6e40242ac110004"
         },
@@ -164,9 +149,14 @@ REGISTRATION_RECORDS = [
     }
 ]
 
+ALIGN_CONFIG = {
+    'experiments': [EXPT_RECORD],
+    'auto_align': True,
+    'auto_fix': True
+}
+
 FEDERATED_CONFIG = {
     'action': ACTION,
-    'registrations': REGISTRATION_RECORDS,
     'experiments': [EXPT_RECORD],
     'runs': [RUN_RECORD_1, RUN_RECORD_2],
     'auto_align': False,
@@ -184,6 +174,62 @@ TEST_QUEUE = 'unittest'
 # Helpers #
 ###########
 
+def enumerate_federated_conbinations(
+    action: str,
+    experiments: list,
+    runs: list,
+    auto_align: bool = True,
+    dockerised: bool = True,
+    log_msgs: bool = True,
+    verbose: bool = True,
+    **kwargs
+) -> dict:
+    """ Enumerates all registered combinations of experiment models and run
+        configurations for a SINGLE project in preparation for bulk operations.
+
+    Args:
+        action (str): Type of machine learning operation to be executed
+        experiments (list): All experimental models to be reconstructed
+        runs (dict): All hyperparameter sets to be used during grid FL inference
+        auto_align (bool): Toggles if multiple feature alignments will be used
+        dockerised (bool): Toggles if current FL grid is containerised or not. 
+            If true (default), hosts & ports of all participants are locked at
+            "0.0.0.0" & 8020 respectively. Otherwise, participant specified
+            configurations will be used (grid architecture has to be finalised).
+        log_msgs (bool): Toggles if messages are to be logged
+        verbose (bool): Toggles verbosity of logs for WSCW objects
+        **kwargs: Miscellaneous keyword argmuments to 
+    Returns:
+        Combinations (dict)
+    """
+    combinations = {}
+    for expt_record in experiments:
+        curr_expt_id = expt_record['key']['expt_id']
+
+        for run_record in runs:
+            run_key = run_record['key']
+            collab_id = run_key['collab_id']
+            project_id = run_key['project_id']
+            expt_id = run_key['expt_id']
+            run_id = run_key['run_id']
+
+            if expt_id == curr_expt_id:
+
+                combination_key = (collab_id, project_id, expt_id, run_id)
+                combination_params = {
+                    'keys': run_key,
+                    'action': action,
+                    'experiment': expt_record,
+                    'run': run_record,
+                    'auto_align': auto_align,
+                    'dockerised': dockerised, 
+                    'log_msgs': log_msgs, 
+                    'verbose': verbose,
+                    **kwargs
+                }
+                combinations[combination_key] = combination_params
+
+    return combinations
 
 ######################
 # Component Fixtures #
@@ -202,6 +248,11 @@ def init_params():
 @pytest.fixture
 def test_kwargs():
     return FEDERATED_CONFIG
+
+
+@pytest.fixture
+def test_alignment():
+    return ALIGN_CONFIG
 
 
 @pytest.fixture

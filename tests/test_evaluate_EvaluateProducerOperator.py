@@ -13,7 +13,11 @@ from multiprocessing import Manager, Process
 
 # Custom
 from synmanager.config import EVALUATE_QUEUE
-from conftest import PROJECT_KEY, RUN_RECORD_1, RUN_RECORD_2
+from conftest import (
+    PROJECT_KEY, RUN_RECORD_1, RUN_RECORD_2,
+    enumerate_federated_conbinations
+)
+
 
 ##################
 # Configurations #
@@ -66,7 +70,14 @@ def test_EvaluateProducerOperator_process(
     # C2: Check that published message is valid
     """
     evaluate_producer_operator.connect()
-    evaluate_producer_operator.process(**PROJECT_KEY, kwargs=test_kwargs)
+
+    job_combinations = enumerate_federated_conbinations(**test_kwargs)
+    for job_key, job_kwargs in job_combinations.items():
+        evaluate_producer_operator.process(**{
+            'process': 'evaluate',   # operations filter for MQ consumer
+            'combination_key': job_key,
+            'combination_params': job_kwargs
+        })
 
     # C1
     declared_queue = evaluate_producer_operator.channel.queue_declare(
@@ -97,10 +108,8 @@ def test_EvaluateProducerOperator_process(
     assert len(store) == 2
     for federated_config in store:
         # C2
-        registered_runs = federated_config[PROJECT_KEY['project_id']]['runs']
-        assert len(registered_runs) == 1
-        # C3
-        assert registered_runs.pop() in [RUN_RECORD_1, RUN_RECORD_2]
+        registered_run = federated_config['combination_params']['run']
+        assert registered_run in [RUN_RECORD_1, RUN_RECORD_2]
 
     p.terminate()
     p.join()

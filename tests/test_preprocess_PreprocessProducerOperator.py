@@ -54,18 +54,21 @@ def test_PreprocessProducerOperator_publish_message(
     preprocess_producer_operator.disconnect()
 
 
-def test_PreprocessProducerOperator_process(preprocess_producer_operator):
+def test_PreprocessProducerOperator_process(
+    test_alignment,
+    preprocess_producer_operator
+):
     """ Tests if message generation is valid. Bulk messages are generated from
         a set of declared arguments and sent to the `Preprocess` queue.
 
     # C1: Check that declared arguments was decomposed into correct no. of jobs
-    # C2: Check that published message is composed of a single job
+    # C2: Check that N no. of messages wereh published
     # C2: Check that published message is valid
     """
     preprocess_producer_operator.connect()
 
     for _ in range(TEST_MESSAGE_COUNT):
-        preprocess_producer_operator.process(**PROJECT_KEY)
+        preprocess_producer_operator.process(**test_alignment)
 
     # C1
     declared_queue = preprocess_producer_operator.channel.queue_declare(
@@ -98,7 +101,7 @@ def test_PreprocessProducerOperator_process(preprocess_producer_operator):
     # C2
     assert len(store) == TEST_MESSAGE_COUNT
     # C3
-    assert list(store) == [PROJECT_KEY for _ in range(TEST_MESSAGE_COUNT)]
+    assert list(store) == [test_alignment for _ in range(TEST_MESSAGE_COUNT)]
 
     p.terminate()
     p.join()

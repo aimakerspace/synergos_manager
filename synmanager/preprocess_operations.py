@@ -66,20 +66,6 @@ class PreprocessProducerOperator(ProducerOperator):
     # Core Functions #
     ##################
 
-    def process(self, project_id: str) -> Dict[str, str]:
-        """ Sends message for project_id to poll involved participants
-
-        Args:
-            project_id (str): Project ID of the target project to operate on
-        Returns:
-            Message payload (dict)
-        """
-        preprocess_kwarg = {'project_id' : project_id}
-        message = self.create_message(preprocess_kwarg)
-        self.publish_message(message)
-
-        return preprocess_kwarg
-
 
 
 ###################################################################
