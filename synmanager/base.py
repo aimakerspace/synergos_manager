@@ -297,7 +297,7 @@ class ConsumerOperator(BaseOperator):
         )
     
 
-    def generate_callback(self, process_function: Callable, host: str):
+    def generate_callback(self, process_function: Callable):
         
         logging.debug(f"Process function specified for callback: {process_function}")
 
@@ -314,7 +314,7 @@ class ConsumerOperator(BaseOperator):
             logging.info(f" [x] {method.routing_key} - Received: {decoded_msg}")
 
             kwargs = self.parse_message(decoded_msg)
-            completed_trainings = process_function(kwargs, host)
+            completed_trainings = process_function(**kwargs)
             logging.info(f" [x] {method.routing_key} - Process completed")
 
             ch.basic_ack(delivery_tag=method.delivery_tag) # manual acknowledgement
@@ -341,8 +341,7 @@ class ConsumerOperator(BaseOperator):
         self.channel.basic_consume(
             queue=self.queue,
             on_message_callback=self.generate_callback(
-                process_function=process_function, 
-                host=self.host
+                process_function=process_function
             ),
             auto_ack=self.auto_ack
         )
@@ -370,8 +369,7 @@ class ConsumerOperator(BaseOperator):
         
         if body:
             message_callback = self.generate_callback(
-                process_function=process_function, 
-                host=self.host
+                process_function=process_function
             )
             message_callback(self.channel, method, properties, body)
 
