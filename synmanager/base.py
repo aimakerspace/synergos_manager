@@ -7,6 +7,8 @@
 # Generic/Built-in
 import json
 import logging
+import multiprocessing as mp
+import time
 from typing import Dict, List, Callable, Any
 
 # Libs
@@ -117,12 +119,33 @@ class BaseOperator(AbstractOperator):
     # Core Functions #
     ##################
 
-    def connect(self):
-        """ Initiate connection with RabbitMQ exchange where queues exist """
+    def connect(self, heartbeat: int = 0, blocked_connection_timeout=300):
+        """ Initiate connection with RabbitMQ exchange where queues exist 
+        
+        Args:
+            heartbeat (int): Heartbeat interval (in secs)
+        """
         if not self.is_connected(): 
             parameters = pika.ConnectionParameters(
                 host=self.host, 
-                port=self.port
+                port=self.port,
+
+                ###########################
+                # Implementation Footnote #
+                ###########################
+
+                # [Cause]
+                # 
+
+                # [Problems]
+                
+                
+                # [Solution]
+                # Reference: https://github.com/php-amqplib/RabbitMqBundle/issues/301
+                
+                heartbeat=heartbeat,
+                
+                # blocked_connection_timeout=0#blocked_connection_timeout
             )
             self.connection = pika.BlockingConnection(parameters)
 
@@ -154,10 +177,13 @@ class BaseOperator(AbstractOperator):
             exchange where queues exist 
         """ 
         if self.is_connected():
+
             self.channel.close()
+            self.channel = None
+
             self.connection.close()
             self.connection = None
-            self.channel = None
+
 
             
 
@@ -311,15 +337,23 @@ class ConsumerOperator(BaseOperator):
                 body: Additional data
             """
             decoded_msg = body.decode()
-            logging.info(f" [x] {method.routing_key} - Received: {decoded_msg}")
+            logging.info(f"[x] {method.routing_key} - Received: {decoded_msg}") 
 
             kwargs = self.parse_message(decoded_msg)
-            completed_trainings = process_function(**kwargs)
-            logging.info(f" [x] {method.routing_key} - Process completed")
 
-            ch.basic_ack(delivery_tag=method.delivery_tag) # manual acknowledgement
-            logging.info(f" [x] {method.routing_key} - Delivered: {completed_trainings}")
-        
+            try:
+                completed_job = process_function(**kwargs)
+                logging.info(f"[x] {method.routing_key} - Process completed.")
+            
+                # Manually acknowledge message to complete consumption
+                ch.basic_ack(delivery_tag=method.delivery_tag) 
+                logging.info(f"[x] {method.routing_key} - Delivered: {completed_job}")
+
+            except Exception as e:
+                # Manually acknowledge message to complete consumption
+                ch.basic_reject(delivery_tag=method.delivery_tag) 
+                logging.error(f"[x] {method.routing_key} - Process rejected. Error: {e}")
+                
         return message_callback
 
         
@@ -405,6 +439,6 @@ class ConsumerOperator(BaseOperator):
         """
         super().connect()
         self.channel.basic_qos(
-            prefetch_size=0,   # no message size limit
-            prefetch_count=10  # max no. of messages to accumulate
+            prefetch_size=0,    # no message size limit
+            prefetch_count=1    # max no. of messages to accumulate
         )
