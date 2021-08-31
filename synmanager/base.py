@@ -349,6 +349,8 @@ class ConsumerOperator(BaseOperator):
                 ch.basic_ack(delivery_tag=method.delivery_tag) 
                 logging.info(f"[x] {method.routing_key} - Delivered: {completed_job}")
 
+                return completed_job
+
             except Exception as e:
                 # Manually acknowledge message to complete consumption
                 ch.basic_reject(delivery_tag=method.delivery_tag) 
@@ -405,7 +407,7 @@ class ConsumerOperator(BaseOperator):
             message_callback = self.generate_callback(
                 process_function=process_function
             )
-            message_callback(self.channel, method, properties, body)
+            return message_callback(self.channel, method, properties, body)
 
         else:
             logging.info(f"No message received in {self.queue}")
