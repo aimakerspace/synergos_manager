@@ -45,7 +45,7 @@ Starting the message exchange is simple:
 
 ```
 # Build customised message exhange as a container
-docker build -t synergos_mq:dev --label "synergos_mq" -f Dockerfile_mq .
+docker build -t synergos_mq:dev --label "synergos_mq" .
 
 # Run container
 docker run 
