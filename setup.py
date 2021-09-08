@@ -21,7 +21,7 @@ def read(fname):
 
 setup(
     name="synergos_manager",
-    version="0.2.0",
+    version="0.1.0",
     author="AI Singapore",
     author_email="synergos-ext@aisingapore.org",
     description="Job management component of the Synergos network",
